@@ -41,7 +41,7 @@ function showRandomQuote() {
 }
 
 // 4. Handle "Add Quote" button click (called from HTML or JS)
-function addQuote() {
+function createAddQuoteForm() {
   const text = newQuoteTextInput.value.trim();
   const category = newQuoteCategoryInput.value.trim();
 
