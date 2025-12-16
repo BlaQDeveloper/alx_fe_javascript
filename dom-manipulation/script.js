@@ -47,11 +47,7 @@ function loadQuoteFromStorage() {
   const savedQuotes = localStorage.getItem('quotes');
   
   if (savedQuotes) {
-    try {
-      quotes = JSON.parse(savedQuotes);
-    } catch (err) {
-      console.error('Failed to parse saved quotes', err);
-    }
+    JSON.parse(savedQuotes);
   }
 }
 
@@ -163,13 +159,13 @@ function filterQuotes() {
     return;
   }
 
-  const matchingQuotes = quotes.filter(
+  const selectedCategory = quotes.filter(
     quote => quote.category?.trim() === selected
   );
 
   quoteDisplay.innerHTML = '';
-  const randomIndex = Math.floor(Math.random() * matchingQuotes.length);
-  const quote = matchingQuotes[randomIndex]; 
+  const randomIndex = Math.floor(Math.random() * selectedCategory.length);
+  const quote = selectedCategory[randomIndex]; 
 
   const quoteTextEl = document.createElement('p');
   quoteTextEl.textContent = `"${quote.text}"`;
