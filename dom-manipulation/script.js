@@ -202,13 +202,16 @@ function filterQuotes() {
 }
 
 // -------- JSONPlaceholder polling --------
-const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts?_limit=5';
 let postsPollTimer = null;
 
 async function fetchQuotesFromServer() {
   if (!postsList) return;
   try {
-    const res = await fetch(POSTS_URL);
+    const res = await fetch('https://jsonplacehoder.typicode.com/posts?_limits=5', {
+     method: 'POST',
+     headers: {'Content-type': 'application/json'}
+    });
+    
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const posts = await res.json();
 
