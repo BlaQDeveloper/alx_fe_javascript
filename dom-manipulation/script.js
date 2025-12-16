@@ -198,37 +198,51 @@ function filterQuotes() {
   quoteCategoryEl.style.fontStyle = 'italic';
   quoteDisplay.appendChild(quoteTextEl);
   quoteDisplay.appendChild(quoteCategoryEl);
-  
 }
 
-// -------- JSONPlaceholder polling --------
+// 6. Periodic data fetching from JSONPlaceholder to simulate server updates
+const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts?_limit=5';
 let postsPollTimer = null;
 
 async function fetchQuotesFromServer() {
   if (!postsList) return;
+
   try {
-    const res = await fetch('https://jsonplacehoder.typicode.com/posts?_limits=5', {
-     method: 'POST',
-     headers: {'Content-type': 'application/json'}
+    const res = await fetch(POSTS_URL, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      }
     });
-    
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    if (!res.ok) {
+      throw new Error(`HTTP error: ${res.status}`);
+    }
     const posts = await res.json();
 
+    // Clear current list
     postsList.innerHTML = '';
+
+    // Render latest posts titles
     posts.forEach((post) => {
       const li = document.createElement('li');
       li.textContent = post.title;
       postsList.appendChild(li);
     });
-  } catch (error) {
-    console.error('Failed to fetch posts:', error);
+  } catch (err) {
+    console.error('Failed to fetch posts:', err);
   }
 }
 
 function startPostsPolling(intervalMs = 10000) {
-  stopPostsPolling();
-  fetchQuotesFromServer(); // immediate
+  // Clear any existing timer
+  if (postsPollTimer) {
+    clearInterval(postsPollTimer);
+  }
+
+  // Fetch immediately, then on an interval
+  fetchQuotesFromServer();
   postsPollTimer = setInterval(fetchQuotesFromServer, intervalMs);
 }
 
@@ -238,6 +252,7 @@ function stopPostsPolling() {
     postsPollTimer = null;
   }
 }
+
 // 5. Listen for user interactions (click events)
 newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,
