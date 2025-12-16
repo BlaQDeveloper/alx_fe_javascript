@@ -3,6 +3,8 @@ const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 const addQuoteBtn = document.getElementById('addQuote');
 const exportQuotesBtn = document.getElementById('exportQuotes');
+const refreshPostsBtn = document.getElementById('refreshPosts');
+const postsList = document.getElementById('postsList');
 const newQuoteTextInput = document.getElementById('newQuoteText');
 const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
 const categoryFilter = document.getElementById('categoryFilter');
@@ -47,7 +49,14 @@ function loadQuoteFromStorage() {
   const savedQuotes = localStorage.getItem('quotes');
   
   if (savedQuotes) {
-    JSON.parse(savedQuotes);
+    try {
+      const parsed = JSON.parse(savedQuotes);
+      if (Array.isArray(parsed)) {
+        quotes = parsed;
+      }
+    } catch (err) {
+      console.error('Failed to parse saved quotes', err);
+    }
   }
 }
 
@@ -84,10 +93,23 @@ function exportQuotesToJSON() {
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = (event) => {
-    const importedQuotes = JSON.parse(event.target.result);
-    quotes.push(...importedQuotes);
-    savedQuotes();
-    alert("Quotes imported successfully!");
+    try {
+      const importedQuotes = JSON.parse(event.target.result);
+      if (!Array.isArray(importedQuotes)) {
+        alert('Invalid JSON: expected an array of quotes.');
+        return;
+      }
+      importedQuotes.forEach((quote) => {
+        if (quote?.text && quote?.category) {
+          quotes.push({ text: quote.text, category: quote.category });
+        }
+      });
+      savedQuotesFromStorage();
+      populateCategories();
+      alert('Quotes imported successfully!');
+    } catch (err) {
+      alert('Failed to read file. Please check the JSON format.');
+    }
   };
   fileReader.readAsText(event.target.files[0]);
 }
@@ -178,6 +200,41 @@ function filterQuotes() {
   quoteDisplay.appendChild(quoteCategoryEl);
   
 }
+
+// -------- JSONPlaceholder polling --------
+const POSTS_URL = 'https://jsonplaceholder.typicode.com/posts?_limit=5';
+let postsPollTimer = null;
+
+async function fetchQuotesFromServer() {
+  if (!postsList) return;
+  try {
+    const res = await fetch(POSTS_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const posts = await res.json();
+
+    postsList.innerHTML = '';
+    posts.forEach((post) => {
+      const li = document.createElement('li');
+      li.textContent = post.title;
+      postsList.appendChild(li);
+    });
+  } catch (error) {
+    console.error('Failed to fetch posts:', error);
+  }
+}
+
+function startPostsPolling(intervalMs = 10000) {
+  stopPostsPolling();
+  fetchQuotesFromServer(); // immediate
+  postsPollTimer = setInterval(fetchQuotesFromServer, intervalMs);
+}
+
+function stopPostsPolling() {
+  if (postsPollTimer) {
+    clearInterval(postsPollTimer);
+    postsPollTimer = null;
+  }
+}
 // 5. Listen for user interactions (click events)
 newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,
@@ -185,6 +242,11 @@ newQuoteBtn.addEventListener('click', showRandomQuote);
 addQuoteBtn.addEventListener('click', createAddQuoteForm);
 exportQuotesBtn.addEventListener('click', exportQuotesToJSON);
 
+if (refreshPostsBtn) {
+  refreshPostsBtn.addEventListener('click', fetchQuotesFromServer);
+}
+
 // 6. Optionally show an initial quote when the page loads
 showRandomQuote();
 populateCategories();
+startPostsPolling(10000);
