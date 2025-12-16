@@ -127,6 +127,28 @@ function createAddQuoteForm() {
   quoteDisplay.appendChild(quoteCategoryEl);
 }
 
+function populateCategories() {
+  if (!categoryFilter) {
+    return;
+  }
+
+  const categories = Array.from(
+    new Set(
+      quotes
+        .map(quote => quote.category?.trim())
+        .filter(Boolean))
+  ).sort();
+
+  categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+
+  categories.forEach((category) => {
+    const opt = document.createElement('option');
+    opt.value = category;
+    opt.textContent = category;
+    categoryFilter.appendChild(opt);
+  });
+}
+
 // 5. Listen for user interactions (click events)
 newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,

@@ -20,6 +20,16 @@
         <button id="exportQuotes">Export Quotes to JSON</button>
         <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)">
     </div>
+    <div>
+        <select id="categoryFilter" onchange="filterQuotes()">
+            <option value="all">All Categories</option>
+            <option value="motivation">Motivation</option>
+            <option value="inspiration">Inspiration</option>
+            <option value="productivity">Productivity</option>
+            <option value="innovation">Innovation</option>
+            <option value="programming">Programming</option>
+        </select>
+    </div>
     <script src="script.js"></script>
 </body>
 
