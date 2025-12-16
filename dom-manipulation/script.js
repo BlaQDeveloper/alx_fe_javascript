@@ -142,9 +142,9 @@ function populateCategories() {
   categoryFilter.innerHTML = '<option value="all">All Categories</option>';
 
   categories.forEach((category) => {
-    const opt = document.createElement('option');
-    opt.value = category;
-    opt.textContent = category;
+    const option = document.createElement('option');
+    option.value = category;
+    optionc.textContent = category;
     categoryFilter.appendChild(opt);
   });
 }
