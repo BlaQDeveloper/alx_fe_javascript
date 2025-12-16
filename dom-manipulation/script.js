@@ -2,6 +2,7 @@
 const quoteDisplay = document.getElementById('quoteDisplay');
 const newQuoteBtn = document.getElementById('newQuote');
 const addQuoteBtn = document.getElementById('addQuote');
+const exportQuotesBtn = document.getElementById('exportQuotes');
 const newQuoteTextInput = document.getElementById('newQuoteText');
 const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
 
@@ -52,6 +53,44 @@ function loadQuoteFromStorage() {
 function savedQuotesFromStorage() {
   localStorage.setItem('quotes', JSON.stringify(quotes))
 }
+
+// Function to export quotes to a JSON file
+function exportQuotesToJSON() {
+  // Convert quotes array to JSON string with pretty formatting
+  const jsonString = JSON.stringify(quotes, null, 2);
+  
+  // Create a Blob with the JSON content
+  const blob = new Blob([jsonString], { type: 'application/json' });
+  
+  // Create a temporary URL for the blob
+  const url = URL.createObjectURL(blob);
+  
+  // Create a temporary anchor element to trigger download
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'quotes.json'; // Set the filename
+  document.body.appendChild(link);
+  
+  // Trigger the download
+  link.click();
+  
+  // Clean up: remove the link and revoke the URL
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// import files from users in form of JSON file
+function importFromJsonFile(event) {
+  const fileReader = new fileReader();
+  fileReader.onload = (event) => {
+    const importedQuotes = JSON.parse(event.target.result);
+    quotes.push(...importedQuotes);
+    savedQuotes();
+    alert("Quotes imported successfully!");
+  };
+  fileReader.readAsText(event.target.files[0]);
+}
+
 // 4. Handle "Add Quote" button click (called from HTML or JS)
 function createAddQuoteForm() {
   const text = newQuoteTextInput.value.trim();
@@ -93,6 +132,7 @@ newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,
 // but we can also attach the event here for clarity:
 addQuoteBtn.addEventListener('click', createAddQuoteForm);
+exportQuotesBtn.addEventListener('click', exportQuotesToJSON);
 
 // 6. Optionally show an initial quote when the page loads
 showRandomQuote();
