@@ -5,6 +5,7 @@ const addQuoteBtn = document.getElementById('addQuote');
 const exportQuotesBtn = document.getElementById('exportQuotes');
 const newQuoteTextInput = document.getElementById('newQuoteText');
 const newQuoteCategoryInput = document.getElementById('newQuoteCategory');
+const categoryFilter = document.getElementById('categoryFilter');
 
 // 2. Data for quotes
 let quotes = [
@@ -46,7 +47,11 @@ function loadQuoteFromStorage() {
   const savedQuotes = localStorage.getItem('quotes');
   
   if (savedQuotes) {
-    JSON.parse(savedQuotes);
+    try {
+      quotes = JSON.parse(savedQuotes);
+    } catch (err) {
+      console.error('Failed to parse saved quotes', err);
+    }
   }
 }
 
@@ -119,6 +124,7 @@ function createAddQuoteForm() {
   quoteDisplay.innerHTML = '';
   const quoteTextEl = document.createElement('p');
   quoteTextEl.textContent = `"${text}"`;
+
   const quoteCategoryEl = document.createElement('span');
   quoteCategoryEl.textContent = `Category: ${category}`;
   quoteCategoryEl.style.display = 'block';
@@ -144,11 +150,38 @@ function populateCategories() {
   categories.forEach((category) => {
     const option = document.createElement('option');
     option.value = category;
-    optionc.textContent = category;
-    categoryFilter.appendChild(opt);
+    option.textContent = category;
+    categoryFilter.appendChild(option);
   });
 }
 
+function filterQuotes() {
+  const selected = categoryFilter.value;
+
+  if (selected === 'all') {
+    showRandomQuote();
+    return;
+  }
+
+  const matchingQuotes = quotes.filter(
+    quote => quote.category?.trim() === selected
+  );
+
+  quoteDisplay.innerHTML = '';
+  const randomIndex = Math.floor(Math.random() * matchingQuotes.length);
+  const quote = matchingQuotes[randomIndex]; 
+
+  const quoteTextEl = document.createElement('p');
+  quoteTextEl.textContent = `"${quote.text}"`;
+
+  const quoteCategoryEl = document.createElement('span');
+  quoteCategoryEl.textContent = `Category: ${quote.category}`;
+  quoteCategoryEl.style.display = 'block';
+  quoteCategoryEl.style.fontStyle = 'italic';
+  quoteDisplay.appendChild(quoteTextEl);
+  quoteDisplay.appendChild(quoteCategoryEl);
+  
+}
 // 5. Listen for user interactions (click events)
 newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,
@@ -158,3 +191,4 @@ exportQuotesBtn.addEventListener('click', exportQuotesToJSON);
 
 // 6. Optionally show an initial quote when the page loads
 showRandomQuote();
+populateCategories();
