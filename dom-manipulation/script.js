@@ -81,7 +81,7 @@ function exportQuotesToJSON() {
 
 // import files from users in form of JSON file
 function importFromJsonFile(event) {
-  const fileReader = new fileReader();
+  const fileReader = new FileReader();
   fileReader.onload = (event) => {
     const importedQuotes = JSON.parse(event.target.result);
     quotes.push(...importedQuotes);
