@@ -17,6 +17,7 @@ let quotes = [
   { text: 'It is never too late to be what you might have been.', category: 'Inspiration' },
 ];
 
+
 // 3. A function that creates and updates DOM content
 function showRandomQuote() {
   // Clear whatever was there before
@@ -40,6 +41,17 @@ function showRandomQuote() {
   quoteDisplay.appendChild(quoteCategoryEl);
 }
 
+function loadQuoteFromStorage() {
+  const savedQuotes = localStorage.getItem('quotes');
+  
+  if (savedQuotes) {
+    JSON.parse(savedQuotes);
+  }
+}
+
+function savedQuotesFromStorage() {
+  localStorage.setItem('quotes', JSON.stringify(quotes))
+}
 // 4. Handle "Add Quote" button click (called from HTML or JS)
 function createAddQuoteForm() {
   const text = newQuoteTextInput.value.trim();
@@ -57,6 +69,8 @@ function createAddQuoteForm() {
 
   // Add new quote to our data array
   quotes.push({ text, category });
+
+  savedQuotesFromStorage();
 
   // Clear the inputs
   newQuoteTextInput.value = '';
@@ -78,7 +92,7 @@ function createAddQuoteForm() {
 newQuoteBtn.addEventListener('click', showRandomQuote);
 // The "Add Quote" button already calls addQuote() via onclick in HTML,
 // but we can also attach the event here for clarity:
-addQuoteBtn.addEventListener('click', addQuote);
+addQuoteBtn.addEventListener('click', createAddQuoteForm);
 
 // 6. Optionally show an initial quote when the page loads
 showRandomQuote();
