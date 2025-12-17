@@ -57,6 +57,7 @@ function syncQuotes(incomingQuotes) {
       existing.category = category;
     }
   });
+  alert("Quotes synced with server");
 }
 
 
