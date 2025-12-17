@@ -36,6 +36,8 @@ function syncQuotes(incomingQuotes) {
     }
   });
 
+  let didChange = false;
+
   incomingQuotes.forEach((raw) => {
     const text = raw?.text?.trim();
     const category = raw?.category?.trim();
@@ -52,12 +54,17 @@ function syncQuotes(incomingQuotes) {
       const newQuote = { text, category };
       quotes.push(newQuote);
       existingByText.set(key, newQuote);
+      didChange = true;
     } else if (existing.category?.trim() !== category) {
       // Conflict: same text but different category – prefer the incoming category
       existing.category = category;
+      didChange = true;
     }
   });
-  alert("Quotes synced with server");
+
+  if (didChange) {
+    alert('Quotes synced with server!');
+  }
 }
 
 
@@ -143,7 +150,6 @@ function importFromJsonFile(event) {
       syncQuotes(importedQuotes);
       savedQuotesFromStorage();
       populateCategories();
-      alert('Quotes imported successfully!');
     } catch (error) {
       alert('Failed to read file. Please check the JSON format.');
     }
