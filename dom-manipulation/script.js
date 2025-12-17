@@ -21,6 +21,44 @@ let quotes = [
   { text: 'It is never too late to be what you might have been.', category: 'Inspiration' },
 ];
 
+// 2b. Utility to sync quotes and resolve conflicts
+function syncQuotes(incomingQuotes) {
+  if (!Array.isArray(incomingQuotes) || incomingQuotes.length === 0) {
+    return;
+  }
+
+  // Build a lookup of existing quotes by normalized text
+  const existingByText = new Map();
+  quotes.forEach((q) => {
+    const text = q?.text?.trim();
+    if (text) {
+      existingByText.set(text.toLowerCase(), q);
+    }
+  });
+
+  incomingQuotes.forEach((raw) => {
+    const text = raw?.text?.trim();
+    const category = raw?.category?.trim();
+
+    if (!text || !category) {
+      return; // skip invalid entries
+    }
+
+    const key = text.toLowerCase();
+    const existing = existingByText.get(key);
+
+    if (!existing) {
+      // New quote – add it
+      const newQuote = { text, category };
+      quotes.push(newQuote);
+      existingByText.set(key, newQuote);
+    } else if (existing.category?.trim() !== category) {
+      // Conflict: same text but different category – prefer the incoming category
+      existing.category = category;
+    }
+  });
+}
+
 
 // 3. A function that creates and updates DOM content
 function showRandomQuote() {
@@ -52,7 +90,8 @@ function loadQuoteFromStorage() {
     try {
       const parsed = JSON.parse(savedQuotes);
       if (Array.isArray(parsed)) {
-        quotes = parsed;
+        // Merge saved quotes into the in-memory defaults, resolving conflicts
+        syncQuotes(parsed);
       }
     } catch (err) {
       console.error('Failed to parse saved quotes', err);
@@ -99,15 +138,12 @@ function importFromJsonFile(event) {
         alert('Invalid JSON: expected an array of quotes.');
         return;
       }
-      importedQuotes.forEach((quote) => {
-        if (quote?.text && quote?.category) {
-          quotes.push({ text: quote.text, category: quote.category });
-        }
-      });
+      // Sync imported quotes with existing ones, resolving conflicts
+      syncQuotes(importedQuotes);
       savedQuotesFromStorage();
       populateCategories();
       alert('Quotes imported successfully!');
-    } catch (err) {
+    } catch (error) {
       alert('Failed to read file. Please check the JSON format.');
     }
   };
@@ -230,8 +266,8 @@ async function fetchQuotesFromServer() {
       li.textContent = post.title;
       postsList.appendChild(li);
     });
-  } catch (err) {
-    console.error('Failed to fetch posts:', err);
+  } catch (error) {
+    console.error('Failed to fetch posts:', error);
   }
 }
 
@@ -265,6 +301,7 @@ if (refreshPostsBtn) {
 }
 
 // 6. Optionally show an initial quote when the page loads
-showRandomQuote();
+loadQuoteFromStorage();
 populateCategories();
+showRandomQuote();
 startPostsPolling(10000);
